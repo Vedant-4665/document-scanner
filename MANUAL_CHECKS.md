@@ -127,11 +127,14 @@ must be on the same Wi-Fi.
 - [ ] Switch page tabs; press **Copy** and paste somewhere. **Expected:** the button briefly shows "Copied" and the page text pastes. **Copy all** copies every page.
 - [ ] Compare the text with the paper. **Expected:** typed text is mostly right; note mistakes (0/O, 1/l are common).
 - [ ] Do the same with the **handwritten note**. **Expected:** poor or no text, and "No text was found on this page" if empty. That's honest, not a bug.
-- [ ] **Download PDF**. **Expected:** a file named after your title (`<title>.pdf`).
+- [ ] Under **Download as**, check the cards: **PDF** (marked Recommended), **Word**, **Text** and **Images (ZIP · 3 images)**.
+- [ ] Download each one. **Expected:** files named after your title. The Word file opens in Word/Pages/Google Docs with one page per scanned page; the Text file shows `--- Page N ---` sections; the ZIP holds `<title> - page 01.jpg`, `02`, `03`.
+- [ ] Save a scan of a **single** page. **Expected:** the image card says **Image · JPG** (Color) or **PNG** (Black & white) and downloads one image, not a ZIP.
+- [ ] Save a scan of a **blank** page. **Expected:** only PDF and Image are offered, with a note that no text was recognised.
 - [ ] Open the PDF. **Expected:** 3 pages in the order 1, 2, 3, each roughly A4-sized.
 - [ ] In the PDF, press Cmd+F (phone: the viewer's search) and search a word you can see. **Expected:** it's found and highlighted in the right place.
 - [ ] Select and copy a line of text from the PDF. **Expected:** you can paste the words.
-- [ ] **Phone:** **Download PDF** saves or opens the file; **Open PDF** shows it in the browser.
+- [ ] **Phone:** tapping a format card saves or opens the file; **Open PDF** shows the PDF in the browser.
 - [ ] Stop Terminal 1, then press **Create and save PDF** on a new scan. **Expected:** a red error message, not a frozen screen. Start Terminal 1 again.
 
 ## 7. History

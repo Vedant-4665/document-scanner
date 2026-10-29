@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { deleteScan, getScan, type ScanDetail } from '../api/client'
 import { Alert } from '../components/Alert'
 import { Lightbox } from '../components/Lightbox'
-import { ScanActions } from '../components/ScanActions'
+import { ExportPanel } from '../components/ExportPanel'
 import { TextViewer } from '../components/TextViewer'
 import { buttonClass } from '../components/ui/buttons'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
@@ -88,7 +88,7 @@ export function ScanDetailScreen({ scanId, onBack, onDeleted }: ScanDetailScreen
             </div>
           </div>
 
-          <ScanActions scan={scan} />
+          <ExportPanel scan={scan} />
 
           <div>
             <h3 className="mb-2 text-sm font-semibold text-slate-700">Pages · tap to enlarge</h3>

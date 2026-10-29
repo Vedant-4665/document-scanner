@@ -269,15 +269,28 @@ When you press **Create and save PDF**, the backend does this for each page:
    picture's size and placed on top. You see the picture, but can search,
    select and copy the words.
 
-**Languages.** `OCR_LANGUAGES` in `config.py` lists `eng` (English) and `hin`
-(Hindi). Only installed languages are used. Homebrew's `tesseract` includes
-English only; `brew install tesseract-lang` adds about 120 more (≈690 MB),
-including Hindi. Restart the backend after installing.
+**Languages.** `OCR_LANGUAGES` in `config.py` lists `eng` (English), `hin`
+(Hindi) and `guj` (Gujarati). Only installed languages are used. Homebrew's
+`tesseract` includes English only; `brew install tesseract-lang` adds about
+120 more (≈690 MB), including Hindi and Gujarati. Restart the backend after
+installing.
 
-Keep English first. On the bank statement, `eng+hin` read 23 of 25 English
-values and all checked Hindi words, while `hin+eng` dropped to 18 of 25.
-Reading two languages is slower: about 6 seconds per page instead of 2.5.
-If you only scan English documents, remove `"hin"` from the list for speed.
+Measured on real pages (a Gujarati address, a Hindi/English bank statement,
+an English certificate):
+
+| Languages | Gujarati page | Statement: English / Hindi | Certificate | Time per page |
+|-----------|---------------|----------------------------|-------------|---------------|
+| `eng` | — | 24/25 / 0/6 | 7/7 | ~1.5 s |
+| `eng+hin` | 1/9 | 23/25 / 6/6 | 7/7 | ~2.2 s |
+| `eng+hin+guj` (default) | 6/9 | 23/25 / 6/6 | 6/7 | ~2.7 s |
+
+Keep English first (`hin+eng` dropped English to 18 of 25). Each extra
+language lets Tesseract "see" more shapes, so codes mixing letters and
+digits (like `617fbe8fc4f4`) are slightly more likely to be misread, and
+Devanagari digits can appear in Gujarati text. A smarter "detect the script,
+then re-read" approach was tried and rejected: it was slower and dropped lines.
+If you only scan English documents, set the list to `["eng"]` for the best
+speed and accuracy.
 
 Finally pypdf joins all pages, in your order, into one PDF in
 `backend/data/outputs/`.
@@ -296,6 +309,23 @@ the pages are ready, **Review & save** opens the review screen. Give the
 scan a title, press **Create and save PDF**, then **Download PDF** and
 read the recognised text. Until you save, pages exist only in the open
 browser tab, and the browser asks before you close or reload it.
+
+## Download formats
+
+After saving, and on each scan in History, **Download as** shows the formats
+that suit that scan. The backend decides (`backend/scanner/exports.py`):
+
+| Format | Offered when | File |
+|--------|--------------|------|
+| **PDF** (recommended) | always | the searchable PDF: the pages with invisible, selectable text |
+| **Word** | text was recognised | `.docx`: title, then each page's text under a "Page N" heading, one Word page per scanned page |
+| **Text** | text was recognised | `.txt` (UTF-8, so Hindi works), pages separated by `--- Page N ---` |
+| **Image / Images** | always | one page: that page as JPG (Color) or PNG (Black & white); several pages: a `.zip` with one image per page, numbered in order |
+
+If no text was found, Word and Text aren't offered, and a note says why.
+Word and Text use the same tidy-up as the on-screen text (no big gaps, no
+stray "|" lines). Only the PDF is stored on disk; the other files are made
+when you download them. Word files are built with the `python-docx` package.
 
 ## History: how scans are saved
 

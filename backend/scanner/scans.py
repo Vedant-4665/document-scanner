@@ -1,7 +1,8 @@
 """API routes for saved scans: create (OCR + searchable PDF), list/search, view, download, delete.
 
 Each page is made searchable in ocr.py; pypdf joins the pages into one file;
-database.py stores the scan's details and text in SQLite.
+database.py stores the scan's details and text in SQLite; exports.py makes
+the other download formats (Word, text, images).
 """
 
 import re
@@ -13,7 +14,7 @@ import pytesseract
 from flask import Blueprint, abort, current_app, jsonify, request, send_file
 from pypdf import PageObject, PdfWriter
 
-from . import config, database
+from . import config, database, exports
 from .errors import read_json_body
 from .ocr import make_searchable_page
 from .processing import color_version_of, find_processed
@@ -116,14 +117,28 @@ def get_scan(scan_id: str):
 def get_scan_pdf(scan_id: str):
     """Shows the PDF in the browser; ?download=1 saves it as "<title>.pdf" instead."""
     scan, _ = _get_or_404(scan_id)
-    # Keep only safe characters for the file name the browser suggests.
-    safe_title = re.sub(r"[^\w\- ]+", "", scan["title"]).strip() or "scan"
     return send_file(
         config.DATA_DIR / scan["pdf_path"],
         mimetype="application/pdf",
         as_attachment=request.args.get("download") == "1",
-        download_name=f"{safe_title}.pdf",
+        download_name=f"{exports.safe_file_name(scan['title'])}.pdf",
     )
+
+
+@bp.get("/<scan_id>/export/<fmt>")
+def export_scan(scan_id: str, fmt: str):
+    """Download the scan as pdf, docx (Word), txt or images (one image or a ZIP)."""
+    scan, pages = _get_or_404(scan_id)
+    offered, _ = exports.available_exports(scan, pages, base_url="")
+    if fmt not in {export["format"] for export in offered}:
+        message = (
+            "This scan has no recognised text, so it can't be downloaded as Word or Text."
+            if fmt in exports.FORMATS
+            else f"Unknown download format: {fmt!r}."
+        )
+        abort(404, description=message)
+    file, file_name, mimetype = exports.build_export(fmt, scan, pages, config.DATA_DIR)
+    return send_file(file, mimetype=mimetype, as_attachment=True, download_name=file_name)
 
 
 @bp.delete("/<scan_id>")
@@ -180,8 +195,12 @@ def _scan_summary(scan) -> dict:
 
 def _scan_detail(scan_id: str) -> dict:
     scan, pages = _get_or_404(scan_id)
+    # The download formats that suit this scan, and why any are missing.
+    offered, notes = exports.available_exports(scan, pages, base_url=f"/api/scans/{scan_id}")
     return {
         **_scan_summary(scan),
+        "exports": offered,
+        "export_notes": notes,
         "pages": [
             {
                 "number": page["page_number"],

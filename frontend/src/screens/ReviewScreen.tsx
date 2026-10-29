@@ -2,7 +2,7 @@ import { ArrowLeft, CircleCheck, FileText, History, Plus, ScanText, Sparkles } f
 import { useEffect, useState } from 'react'
 import { createScan, type ScanDetail } from '../api/client'
 import { Alert } from '../components/Alert'
-import { ScanActions } from '../components/ScanActions'
+import { ExportPanel } from '../components/ExportPanel'
 import { TextViewer } from '../components/TextViewer'
 import { buttonClass } from '../components/ui/buttons'
 import { StepIndicator } from '../components/ui/StepIndicator'
@@ -76,7 +76,7 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
           </p>
         </div>
 
-        <ScanActions scan={scan} />
+        <ExportPanel scan={scan} />
         <TextViewer pages={scan.pages} />
 
         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">

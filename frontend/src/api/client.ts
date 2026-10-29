@@ -97,9 +97,21 @@ export type ScanSummary = {
   snippet: string | null // text around the search match, when searching
 }
 
+// One download format the backend says suits a scan (PDF, Word, Text, Images).
+export type ExportOption = {
+  format: 'pdf' | 'docx' | 'txt' | 'images'
+  label: string // e.g. "Word"
+  file_type: string // e.g. "DOCX" or "ZIP · 3 images"
+  description: string
+  recommended: boolean
+  url: string // downloads the file
+}
+
 // A saved scan with all its pages (POST /api/scans and GET /api/scans/<id>).
 export type ScanDetail = Omit<ScanSummary, 'thumbnail_url' | 'snippet'> & {
   pages: { number: number; image_url: string; original_url: string; text: string }[]
+  exports: ExportOption[]
+  export_notes: string[] // why a format is missing, e.g. no text was found
 }
 
 // OCR every page, build one searchable PDF and save it in history.

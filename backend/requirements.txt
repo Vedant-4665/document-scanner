@@ -8,3 +8,5 @@ numpy==2.2.6
 pytesseract==0.3.13
 pypdf==6.1.1
 pillow==11.3.0
+# Builds Word (.docx) files for the "Download as Word" option.
+python-docx==1.2.0
