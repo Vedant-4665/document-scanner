@@ -38,12 +38,10 @@ MIN_IMAGE_SIDE = 200
 
 # --- OCR (Milestone 5) ---
 
-# Languages Tesseract should read, in order of preference. "eng" (English)
-# comes with Homebrew's tesseract. The others are used only if their language
-# data is installed (`brew install tesseract-lang` installs them all), so the
-# app keeps working without them. "hin" = Hindi, "guj" = Gujarati.
-# Keep English first: putting another language first made English worse.
-# Each extra language costs a little speed and accuracy (see README).
+# Languages Tesseract may read. The first ("eng", English) is always used.
+# The others ("hin" Hindi, "guj" Gujarati) are added per page, only when that
+# page contains their script (see ocr.choose_languages), and only if their
+# language data is installed (`brew install tesseract-lang` installs them all).
 OCR_LANGUAGES = ["eng", "hin", "guj"]
 # Give up on one page after this many seconds instead of hanging forever.
 OCR_TIMEOUT_SECONDS = 120

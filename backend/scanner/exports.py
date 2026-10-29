@@ -5,7 +5,8 @@ from the recognised text (Word and plain text) are only offered when OCR
 actually found text, because an empty document would be useless.
 
     PDF     always; the recommended format (shows the pages, text is searchable)
-    Word    .docx with the recognised text, ready to edit (needs text)
+    Word    .docx: each scanned page as a picture, then its recognised text
+            to edit (needs text)
     Text    .txt with the recognised text (needs text)
     Images  one page: the page as JPG (Color) or PNG (Black & white);
             several pages: a .zip with one image per page, in order
@@ -20,6 +21,8 @@ from io import BytesIO
 from pathlib import Path
 
 from docx import Document
+from docx.shared import Inches
+from PIL import Image
 
 FORMATS = ("pdf", "docx", "txt", "images")
 
@@ -50,7 +53,7 @@ def available_exports(scan, pages, base_url: str) -> tuple[list[dict], list[str]
                 "format": "docx",
                 "label": "Word",
                 "file_type": "DOCX",
-                "description": "Edit the recognised text in Word, Pages or Google Docs.",
+                "description": "Each page as a picture, with its text below to edit in Word or Google Docs.",
                 "recommended": False,
             }
         )
@@ -92,7 +95,7 @@ def build_export(fmt: str, scan, pages, data_dir: Path) -> tuple[BytesIO | Path,
         return BytesIO(_text_file(scan, pages).encode("utf-8")), f"{name}.txt", "text/plain"
     if fmt == "docx":
         return (
-            _word_file(scan, pages),
+            _word_file(scan, pages, data_dir),
             f"{name}.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
@@ -148,17 +151,38 @@ def _text_file(scan, pages) -> str:
     return "\n\n\n".join(parts) + "\n"
 
 
-def _word_file(scan, pages) -> BytesIO:
+# Word page: A4 with 0.8-inch margins. The picture of each scanned page may
+# use the full width, but at most this height, leaving room for its heading.
+WORD_PAGE_WIDTH, WORD_PAGE_HEIGHT, WORD_MARGIN = 8.27, 11.69, 0.8
+WORD_PICTURE_MAX_HEIGHT = 8.0
+
+
+def _word_file(scan, pages, data_dir: Path) -> BytesIO:
     title, subtitle, warning = _header_lines(scan)
     document = Document()
+    section = document.sections[0]
+    section.page_width, section.page_height = Inches(WORD_PAGE_WIDTH), Inches(WORD_PAGE_HEIGHT)
+    for side in ("left_margin", "right_margin", "top_margin", "bottom_margin"):
+        setattr(section, side, Inches(WORD_MARGIN))
+    usable_width = WORD_PAGE_WIDTH - 2 * WORD_MARGIN
+
     document.add_heading(title, level=0)
     document.add_paragraph(subtitle)
-    document.add_paragraph(warning).runs[0].italic = True
 
     for index, page in enumerate(pages):
         if index > 0:
             document.add_page_break()  # each scanned page starts a new Word page
         document.add_heading(f"Page {page['page_number']}", level=1)
+
+        # The scanned page as a picture, as large as fits.
+        picture_path = data_dir / page["processed_path"]
+        with Image.open(picture_path) as picture:
+            aspect = picture.width / picture.height
+        document.add_picture(str(picture_path), width=Inches(min(usable_width, WORD_PICTURE_MAX_HEIGHT * aspect)))
+
+        # Its recognised text, as normal editable paragraphs.
+        document.add_heading("Text on this page", level=2)
+        document.add_paragraph(warning).runs[0].italic = True
         paragraphs = tidy_paragraphs(page["ocr_text"])
         if not paragraphs:
             document.add_paragraph("(No text found on this page.)").runs[0].italic = True

@@ -258,14 +258,24 @@ When you press **Create and save PDF**, the backend does this for each page:
    On a real bank-statement screenshot this read **22 of 25** checked values
    (dates, amounts, names) correctly, against **6 of 25** when Tesseract read
    the black & white look. Shadowed photos still read all lines correctly.
-2. **Run Tesseract twice on that copy** (through `pytesseract`, told the copy
-   is 300 DPI, a normal scanner setting):
-   - once for the **plain text**, shown on screen and saved for search later
-   - once for a **text-only PDF page**: invisible words placed exactly where
-     they appear on the page (`textonly_pdf=1`)
-3. **Make the picture page.** Pillow turns the page as you chose it (Color or
+2. **Choose the languages for this page** (`choose_languages()` in `ocr.py`).
+   A quick read of a small preview (1000 px wide) with every installed
+   language shows which scripts are on the page. A language is used only
+   if its script is at least 10% of the page's letters *and* at least 20%
+   as common as the page's main non-English script. English is always used.
+   Without this, Tesseract mixed scripts (Gujarati letters inside Hindi
+   words) and invented text from logos and photos.
+3. **Run Tesseract once on that copy** (through `pytesseract`, told the copy
+   is 300 DPI, a normal scanner setting). That one run writes:
+   - a **text-only PDF page**: invisible words placed exactly where they
+     appear on the page (`textonly_pdf=1`)
+   - a **word table** (TSV): every word with its position and a confidence
+     score from 0 to 100. The page's text is rebuilt from this table,
+     **leaving out lines where no word scored 60 or more**. Those are almost
+     always "text" Tesseract imagined in a logo, barcode, photo or signature.
+4. **Make the picture page.** Pillow turns the page as you chose it (Color or
    Black & white) into a PDF page sized to fit A4.
-4. **Stack the two** with pypdf: the text layer is stretched to exactly the
+5. **Stack the two** with pypdf: the text layer is stretched to exactly the
    picture's size and placed on top. You see the picture, but can search,
    select and copy the words.
 
@@ -273,24 +283,19 @@ When you press **Create and save PDF**, the backend does this for each page:
 (Hindi) and `guj` (Gujarati). Only installed languages are used. Homebrew's
 `tesseract` includes English only; `brew install tesseract-lang` adds about
 120 more (≈690 MB), including Hindi and Gujarati. Restart the backend after
-installing.
+installing. To support another script, add its language code to
+`OCR_LANGUAGES` and its Unicode letter range to `SCRIPT_OF_LANGUAGE` in
+`ocr.py`.
 
-Measured on real pages (a Gujarati address, a Hindi/English bank statement,
-an English certificate):
+Tested on five real pages (an ID card, two Hindi/English bank statements, a
+Gujarati address and an English certificate): every checked phrase was read
+correctly (47 of 47), with no mixed-up scripts. Time per page: about 1–2 s
+for English or Gujarati pages, about 10 s for a dense bilingual statement.
 
-| Languages | Gujarati page | Statement: English / Hindi | Certificate | Time per page |
-|-----------|---------------|----------------------------|-------------|---------------|
-| `eng` | — | 24/25 / 0/6 | 7/7 | ~1.5 s |
-| `eng+hin` | 1/9 | 23/25 / 6/6 | 7/7 | ~2.2 s |
-| `eng+hin+guj` (default) | 6/9 | 23/25 / 6/6 | 6/7 | ~2.7 s |
+Reading every language on every page was worse: Gujarati letters appeared
+inside Hindi words, the certificate code `617fbe8fc4f4` became `61700810414`,
+and Hindi digits appeared in Gujarati text.
 
-Keep English first (`hin+eng` dropped English to 18 of 25). Each extra
-language lets Tesseract "see" more shapes, so codes mixing letters and
-digits (like `617fbe8fc4f4`) are slightly more likely to be misread, and
-Devanagari digits can appear in Gujarati text. A smarter "detect the script,
-then re-read" approach was tried and rejected: it was slower and dropped lines.
-If you only scan English documents, set the list to `["eng"]` for the best
-speed and accuracy.
 
 Finally pypdf joins all pages, in your order, into one PDF in
 `backend/data/outputs/`.
@@ -318,7 +323,7 @@ that suit that scan. The backend decides (`backend/scanner/exports.py`):
 | Format | Offered when | File |
 |--------|--------------|------|
 | **PDF** (recommended) | always | the searchable PDF: the pages with invisible, selectable text |
-| **Word** | text was recognised | `.docx`: title, then each page's text under a "Page N" heading, one Word page per scanned page |
+| **Word** | text was recognised | `.docx` (A4): for each scanned page, a "Page N" heading, the **page as a picture**, then its recognised text as normal paragraphs you can edit; each scanned page starts a new Word page |
 | **Text** | text was recognised | `.txt` (UTF-8, so Hindi works), pages separated by `--- Page N ---` |
 | **Image / Images** | always | one page: that page as JPG (Color) or PNG (Black & white); several pages: a `.zip` with one image per page, numbered in order |
 

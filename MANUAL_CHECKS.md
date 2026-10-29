@@ -128,7 +128,7 @@ must be on the same Wi-Fi.
 - [ ] Compare the text with the paper. **Expected:** typed text is mostly right; note mistakes (0/O, 1/l are common).
 - [ ] Do the same with the **handwritten note**. **Expected:** poor or no text, and "No text was found on this page" if empty. That's honest, not a bug.
 - [ ] Under **Download as**, check the cards: **PDF** (marked Recommended), **Word**, **Text** and **Images (ZIP · 3 images)**.
-- [ ] Download each one. **Expected:** files named after your title. The Word file opens in Word/Pages/Google Docs with one page per scanned page; the Text file shows `--- Page N ---` sections; the ZIP holds `<title> - page 01.jpg`, `02`, `03`.
+- [ ] Download each one. **Expected:** files named after your title. The Word file opens in Word/Pages/Google Docs and shows each scanned page as a picture, with its recognised text below to edit; the Text file shows `--- Page N ---` sections; the ZIP holds `<title> - page 01.jpg`, `02`, `03`.
 - [ ] Save a scan of a **single** page. **Expected:** the image card says **Image · JPG** (Color) or **PNG** (Black & white) and downloads one image, not a ZIP.
 - [ ] Save a scan of a **blank** page. **Expected:** only PDF and Image are offered, with a note that no text was recognised.
 - [ ] Open the PDF. **Expected:** 3 pages in the order 1, 2, 3, each roughly A4-sized.
