@@ -1,0 +1,272 @@
+import { History, ScanLine } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ServerStatusBanner } from './components/ServerStatusBanner'
+import { useToast } from './components/ui/Toast'
+import type { Page, PageDraft } from './scanTypes'
+import { AdjustCornersScreen } from './screens/AdjustCornersScreen'
+import { HistoryScreen } from './screens/HistoryScreen'
+import { PageResultScreen } from './screens/PageResultScreen'
+import { ReviewScreen } from './screens/ReviewScreen'
+import { ScanDetailScreen } from './screens/ScanDetailScreen'
+import { ScanScreen } from './screens/ScanScreen'
+
+// The two tabs. Switching tabs keeps the scan in progress.
+type Tab = 'scan' | 'history'
+
+// The page currently being set up, and which of its two steps is showing.
+type Editing = {
+  draft: PageDraft
+  index: number | null // position in `pages` when editing an existing page; null = new page
+  step: 'corners' | 'result'
+}
+
+export default function App() {
+  const showToast = useToast()
+  const [tab, setTab] = useState<Tab>('scan')
+  // The saved scan open in the History tab, if any.
+  const [openScanId, setOpenScanId] = useState<string | null>(null)
+  // The document being built, in page order. It lives only in this browser
+  // tab until "Create and save PDF" saves it to history.
+  const [pages, setPages] = useState<Page[]>([])
+  const [editing, setEditing] = useState<Editing | null>(null)
+  const [isReviewing, setIsReviewing] = useState(false)
+  // True once the current pages have been saved as a PDF in history.
+  const [isSaved, setIsSaved] = useState(false)
+
+  // Ask before closing or reloading the tab, which would lose the pages.
+  const hasUnsavedWork = (pages.length > 0 && !isSaved) || editing !== null
+  useEffect(() => {
+    if (!hasUnsavedWork) return
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [hasUnsavedWork])
+
+  function updateDraft(changes: Partial<PageDraft>) {
+    setEditing((current) => current && { ...current, draft: { ...current.draft, ...changes } })
+  }
+
+  function movePage(index: number, direction: -1 | 1) {
+    setPages((current) => {
+      const next = [...current]
+      const [page] = next.splice(index, 1)
+      next.splice(index + direction, 0, page)
+      return next
+    })
+  }
+
+  // Removing is instant, with an "Undo" button in the message instead of an
+  // "Are you sure?" question: faster, and mistakes are easy to fix.
+  function removePage(index: number) {
+    const removed = pages[index]
+    setPages((current) => current.filter((_, i) => i !== index))
+    showToast(`Page ${index + 1} removed`, {
+      kind: 'info',
+      action: {
+        label: 'Undo',
+        onClick: () =>
+          setPages((current) => [...current.slice(0, index), removed, ...current.slice(index)]),
+      },
+    })
+  }
+
+  function savePage(page: Page, index: number | null) {
+    setPages((current) =>
+      index === null ? [...current, page] : current.map((p, i) => (i === index ? page : p)),
+    )
+    setEditing(null)
+    showToast(index === null ? `Page ${pages.length + 1} added` : `Page ${index + 1} updated`)
+  }
+
+  function startNewScan() {
+    setPages([])
+    setEditing(null)
+    setIsReviewing(false)
+    setIsSaved(false)
+  }
+
+  function switchTab(next: Tab) {
+    setTab(next)
+    if (next === 'history') setOpenScanId(null)
+    window.scrollTo({ top: 0 })
+  }
+
+  const pageNumber = editing ? (editing.index ?? pages.length) + 1 : 0
+
+  // Work out which screen to show. `screenKey` changes with the screen, which
+  // replays the fade-in animation.
+  let screenKey: string
+  let screen: ReactNode
+  if (tab === 'history') {
+    screenKey = openScanId ? `scan-${openScanId}` : 'history'
+    screen = openScanId ? (
+      <ScanDetailScreen
+        scanId={openScanId}
+        onBack={() => setOpenScanId(null)}
+        onDeleted={() => setOpenScanId(null)}
+      />
+    ) : (
+      <HistoryScreen onOpenScan={setOpenScanId} onStartScanning={() => switchTab('scan')} />
+    )
+  } else if (isReviewing && pages.length > 0) {
+    screenKey = 'review'
+    screen = (
+      <ReviewScreen
+        pages={pages}
+        onBack={() => setIsReviewing(false)}
+        onNewScan={startNewScan}
+        onSaved={() => setIsSaved(true)}
+        onViewHistory={() => {
+          startNewScan()
+          switchTab('history')
+        }}
+      />
+    )
+  } else if (!editing) {
+    screenKey = 'scan'
+    screen = (
+      <ScanScreen
+        pages={pages}
+        onPageStarted={(draft) => setEditing({ draft, index: null, step: 'corners' })}
+        onMovePage={movePage}
+        onEditPage={(index) => setEditing({ draft: pages[index], index, step: 'corners' })}
+        onRemovePage={removePage}
+        onReview={() => setIsReviewing(true)}
+      />
+    )
+  } else if (editing.step === 'corners') {
+    screenKey = 'corners'
+    screen = (
+      <AdjustCornersScreen
+        pageNumber={pageNumber}
+        draft={editing.draft}
+        onCornersChange={(corners) => updateDraft({ corners })}
+        onContinue={() => setEditing({ ...editing, step: 'result' })}
+        onCancel={() => setEditing(null)}
+      />
+    )
+  } else {
+    screenKey = 'result'
+    screen = (
+      <PageResultScreen
+        pageNumber={pageNumber}
+        draft={editing.draft}
+        onEnhancementChange={(enhancement) => updateDraft({ enhancement })}
+        onRotationChange={(rotation) => updateDraft({ rotation })}
+        onSave={(processed) => savePage({ ...editing.draft, processed }, editing.index)}
+        onBack={() => setEditing({ ...editing, step: 'corners' })}
+        onCancel={() => setEditing(null)}
+      />
+    )
+  }
+
+  // While a page is being edited, the bottom tab bar is hidden so the
+  // step's own buttons can sit at the bottom of the screen.
+  const showBottomNav = !(tab === 'scan' && editing)
+  // The Scan tab shows how many pages are waiting to be saved.
+  const unsavedCount = isSaved ? 0 : pages.length
+
+  return (
+    <div className="min-h-dvh bg-gradient-to-b from-indigo-50/60 via-slate-50 to-slate-50">
+      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-3 px-4">
+          <button
+            type="button"
+            onClick={() => switchTab('scan')}
+            className="flex items-center gap-2.5 rounded-xl"
+          >
+            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30">
+              <ScanLine className="size-5" />
+            </span>
+            <span className="text-left leading-tight">
+              <span className="block font-bold tracking-tight">DocScan</span>
+              <span className="block text-xs text-slate-500">Computer vision scanner</span>
+            </span>
+          </button>
+
+          {/* Desktop tabs. Phones use the bottom bar instead. */}
+          <nav className="hidden rounded-xl bg-slate-100 p-1 sm:flex" aria-label="Main">
+            <TabButton active={tab === 'scan'} onClick={() => switchTab('scan')} icon={<ScanLine className="size-4" />}>
+              Scan
+              {unsavedCount > 0 && <CountBadge count={unsavedCount} />}
+            </TabButton>
+            <TabButton active={tab === 'history'} onClick={() => switchTab('history')} icon={<History className="size-4" />}>
+              History
+            </TabButton>
+          </nav>
+        </div>
+      </header>
+
+      <main className={`mx-auto flex max-w-3xl flex-col gap-4 px-4 pt-5 ${showBottomNav ? 'pb-28 sm:pb-12' : 'pb-6 sm:pb-12'}`}>
+        <ServerStatusBanner />
+        <div key={screenKey} className="animate-fade-in-up">
+          {screen}
+        </div>
+      </main>
+
+      {showBottomNav && (
+        <nav
+          aria-label="Main"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
+        >
+          <div className="grid grid-cols-2">
+            <BottomTab active={tab === 'scan'} onClick={() => switchTab('scan')} label="Scan" badge={unsavedCount}>
+              <ScanLine className="size-6" />
+            </BottomTab>
+            <BottomTab active={tab === 'history'} onClick={() => switchTab('history')} label="History">
+              <History className="size-6" />
+            </BottomTab>
+          </div>
+        </nav>
+      )}
+    </div>
+  )
+}
+
+function TabButton(props: { active: boolean; onClick: () => void; icon: ReactNode; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      aria-current={props.active ? 'page' : undefined}
+      className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+        props.active ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+      }`}
+    >
+      {props.icon}
+      {props.children}
+    </button>
+  )
+}
+
+function BottomTab(props: { active: boolean; onClick: () => void; label: string; badge?: number; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      aria-current={props.active ? 'page' : undefined}
+      className={`relative flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold transition active:scale-95 ${
+        props.active ? 'text-indigo-600' : 'text-slate-500'
+      }`}
+    >
+      <span className="relative">
+        {props.children}
+        {!!props.badge && (
+          <span className="absolute -top-1.5 -right-2.5">
+            <CountBadge count={props.badge} />
+          </span>
+        )}
+      </span>
+      {props.label}
+    </button>
+  )
+}
+
+// Small round number, e.g. how many pages are waiting in the current scan.
+function CountBadge({ count }: { count: number }) {
+  return (
+    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] leading-5 font-bold text-white">
+      {count}
+    </span>
+  )
+}
