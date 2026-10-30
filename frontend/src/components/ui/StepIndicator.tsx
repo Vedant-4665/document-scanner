@@ -2,39 +2,45 @@ import { Check } from 'lucide-react'
 
 const STEPS = ['Capture', 'Corners', 'Enhance', 'Review']
 
-// The progress bar at the top of the scanning flow: ① Capture ② Corners …
 export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
   return (
-    <ol className="flex items-center gap-1.5" aria-label={`Step ${current} of ${STEPS.length}`}>
+    <div className="flex items-center gap-0" role="list" aria-label={`Step ${current} of ${STEPS.length}`}>
       {STEPS.map((label, index) => {
         const number = index + 1
-        const done = number < current
+        const done   = number < current
         const active = number === current
         return (
-          <li key={label} className="flex flex-1 items-center gap-1.5">
-            <span
-              className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
-                done
-                  ? 'bg-teal-500 text-gray-950'
-                  : active
-                    ? 'bg-teal-500 text-gray-950 ring-4 ring-teal-500/20'
-                    : 'bg-gray-700/60 text-gray-500'
-              }`}
-              aria-current={active ? 'step' : undefined}
-            >
-              {done ? <Check className="size-3.5" strokeWidth={3} /> : number}
-            </span>
-            <span
-              className={`hidden text-xs font-medium sm:inline ${active ? 'text-gray-200' : 'text-gray-500'}`}
-            >
-              {label}
-            </span>
+          <div key={label} className="flex flex-1 items-center" role="listitem">
+            {/* Circle + label */}
+            <div className="flex flex-col items-center gap-1">
+              <div
+                aria-current={active ? 'step' : undefined}
+                className={`flex size-8 items-center justify-center rounded-full text-[13px] font-bold transition-all duration-200 ${
+                  done
+                    ? 'bg-amber-700 text-white'
+                    : active
+                      ? 'bg-amber-700 text-white ring-4 ring-amber-200'
+                      : 'bg-[#f0ebe3] text-[#555047] ring-1 ring-[#d4c9bb]'
+                }`}
+              >
+                {done ? <Check className="size-4" strokeWidth={3} /> : number}
+              </div>
+              <span
+                className={`hidden text-[11px] font-medium sm:block ${
+                  active ? 'text-amber-700' : done ? 'text-[#2e2118]' : 'text-[#555047]'
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+
+            {/* Connector */}
             {number < STEPS.length && (
-              <span className={`h-0.5 flex-1 rounded-full ${done ? 'bg-teal-500' : 'bg-gray-700/60'}`} />
+              <div className={`mx-1 h-px flex-1 transition-all duration-300 ${done ? 'bg-amber-700' : 'bg-[#d4c9bb]'}`} />
             )}
-          </li>
+          </div>
         )
       })}
-    </ol>
+    </div>
   )
 }

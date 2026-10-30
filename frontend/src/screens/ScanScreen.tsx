@@ -8,40 +8,23 @@ import { StepIndicator } from '../components/ui/StepIndicator'
 import type { Analysis, Page } from '../scanTypes'
 
 type ScanScreenProps = {
-  pages: Page[]
-  analysis: Analysis | null // set while a chosen photo is being uploaded and analysed
-  error: string | null // why the last photo couldn't be added
-  onFileChosen: (file: File) => void
-  onCancelAnalysis: () => void
+  pages: Page[]; analysis: Analysis | null; error: string | null
+  onFileChosen: (file: File) => void; onCancelAnalysis: () => void
   onMovePage: (index: number, direction: -1 | 1) => void
-  onEditPage: (index: number) => void
-  onRemovePage: (index: number) => void
-  onReview: () => void
+  onEditPage: (index: number) => void; onRemovePage: (index: number) => void; onReview: () => void
 }
 
-// The home screen: the document's pages so far, and ways to add another.
-export function ScanScreen({
-  pages,
-  analysis,
-  error,
-  onFileChosen,
-  onCancelAnalysis,
-  onMovePage,
-  onEditPage,
-  onRemovePage,
-  onReview,
-}: ScanScreenProps) {
-  // While a photo is being analysed: the photo with the scanning animation,
-  // and a Cancel button for when the wrong photo was chosen.
+export function ScanScreen({ pages, analysis, error, onFileChosen, onCancelAnalysis, onMovePage, onEditPage, onRemovePage, onReview }: ScanScreenProps) {
+
+  /* Analysing */
   if (analysis) {
     return (
       <section className="flex flex-col gap-5">
         <StepIndicator current={1} />
-        {/* Cancel sits next to the title, so it is visible without scrolling on a phone. */}
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-gray-100">Analysing page {pages.length + 1}…</h2>
+          <h2 className="font-display text-xl text-[#1c1814]">Analysing page {pages.length + 1}…</h2>
           <button type="button" onClick={onCancelAnalysis} className={buttonClass('secondary', 'sm')}>
-            <X className="size-4" /> Cancel
+            <X className="size-3.5" /> Cancel
           </button>
         </div>
         <ScanningPreview src={analysis.previewUrl} stage={analysis.stage} />
@@ -49,42 +32,45 @@ export function ScanScreen({
     )
   }
 
-  // No pages yet: welcome screen with big capture buttons and tips.
+  /* Empty hero */
   if (pages.length === 0) {
     return (
-      <section className="flex flex-col gap-6">
-        <div className="pt-2 text-center">
-          <span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-800/80 text-teal-400 shadow-lg shadow-teal-500/10 ring-1 ring-gray-700/80">
-            <ScanText className="size-8" />
-          </span>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-100 sm:text-3xl">Scan a document</h2>
-          <p className="mx-auto mt-2 max-w-md text-gray-400">
-            Snap a photo of each page. We'll straighten it, clean it up, read the text and turn it
-            into a searchable PDF.
-          </p>
+      <section className="flex flex-col gap-8">
+        {/* Hero card */}
+        <div className="overflow-hidden rounded-2xl border border-[#e2d9cc] bg-white shadow-sm shadow-amber-900/5">
+          {/* amber header band */}
+          <div className="flex items-center gap-4 bg-amber-700 px-6 py-5">
+            <span className="flex size-12 items-center justify-center rounded-xl bg-amber-600 shadow-inner">
+              <ScanText className="size-6 text-amber-100" />
+            </span>
+            <div>
+              <h1 className="font-display text-2xl text-white">Scan a document</h1>
+              <p className="mt-0.5 text-[13px] text-amber-200">Camera or file upload · straighten · OCR · PDF</p>
+            </div>
+          </div>
+          <div className="px-6 py-5">
+            <p className="text-sm leading-relaxed text-[#2e2118]">
+              Snap a photo of each page or upload an image. We'll automatically find the edges, clean
+              it up, read the text and export a searchable PDF you can download or share.
+            </p>
+          </div>
         </div>
 
         {error && <Alert kind="error">{error}</Alert>}
-
         <CaptureOptions variant="hero" onFileChosen={onFileChosen} />
-
-       
       </section>
     )
   }
 
-  // Pages exist: grid of pages, "Add page" tile, and the button to continue.
-  const pageWord = pages.length === 1 ? 'page' : 'pages'
+  /* Has pages */
+  const pw = pages.length === 1 ? 'page' : 'pages'
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-5">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-100">Your document</h2>
-          <p className="text-sm text-gray-400">
-            {pages.length} {pageWord} · tap a page to edit it
-          </p>
+          <h2 className="font-display text-xl text-[#1c1814]">Your document</h2>
+          <p className="text-sm text-[#555047]">{pages.length} {pw} · tap to edit</p>
         </div>
-        {/* Desktop only; phones get the big sticky button at the bottom instead. */}
         <div className="hidden sm:block">
           <button type="button" onClick={onReview} className={buttonClass('primary')}>
             Review & save <ArrowRight className="size-4" />
@@ -98,14 +84,11 @@ export function ScanScreen({
         <CaptureOptions variant="tile" onFileChosen={onFileChosen} />
       </PageGrid>
 
-      {/* On phones, the main button sits just above the bottom tab bar. */}
       <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-20 sm:hidden">
-        <button type="button" onClick={onReview} className={`${buttonClass('primary', 'lg')} w-full shadow-lg shadow-teal-500/20`}>
-          Review & save {pages.length} {pageWord} <ArrowRight className="size-5" />
+        <button type="button" onClick={onReview} className={`${buttonClass('primary', 'lg')} w-full shadow-lg shadow-amber-900/15`}>
+          Review & save {pages.length} {pw} <ArrowRight className="size-4" />
         </button>
       </div>
     </section>
   )
 }
-
-

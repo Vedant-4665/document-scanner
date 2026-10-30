@@ -8,7 +8,7 @@ export function Highlight({ text, query }: { text: string; query: string }) {
     <>
       {text.split(pattern).map((part, index) =>
         part.toLowerCase() === q.toLowerCase() ? (
-          <mark key={index} className="rounded bg-amber-200/80 px-0.5 text-inherit">
+          <mark key={index} className="rounded bg-violet-500/25 px-0.5 text-violet-200">
             {part}
           </mark>
         ) : (

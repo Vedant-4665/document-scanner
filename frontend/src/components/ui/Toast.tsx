@@ -1,25 +1,21 @@
 import { CircleCheck, Info, TriangleAlert } from 'lucide-react'
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
 
-type ToastKind = 'success' | 'error' | 'info'
+type ToastKind   = 'success' | 'error' | 'info'
 type ToastAction = { label: string; onClick: () => void }
 type ToastOptions = { kind?: ToastKind; action?: ToastAction }
-type ToastItem = { id: number; message: string; kind: ToastKind; action?: ToastAction }
+type ToastItem   = { id: number; message: string; kind: ToastKind; action?: ToastAction }
 
-// How long a message stays on screen. Messages with an Undo button stay longer.
-const DURATION_MS = 3000
+const DURATION_MS             = 3000
 const DURATION_WITH_ACTION_MS = 6000
 
 const ToastContext = createContext<(message: string, options?: ToastOptions) => void>(() => {})
 
-// Short messages that pop up at the top of the screen and disappear on their
-// own ("Page added", "Scan deleted"). Wrap the app in <ToastProvider>, then
-// call `const showToast = useToast()` in any component.
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
   const dismiss = useCallback((id: number) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id))
+    setToasts((current) => current.filter((t) => t.id !== id))
   }, [])
 
   const showToast = useCallback(
@@ -34,28 +30,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={showToast}>
       {children}
-      {/* aria-live makes screen readers read new messages aloud. */}
-      <div
-        aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-4"
-      >
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto flex w-full max-w-sm animate-pop-in items-center gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-sm text-white shadow-xl"
+            className="pointer-events-auto flex w-full max-w-sm animate-slide-down items-center gap-3 rounded-2xl border border-[#d4c9bb] bg-white px-4 py-3 text-sm text-[#1c1814] shadow-lg shadow-amber-900/10"
           >
-            {toast.kind === 'success' && <CircleCheck className="size-5 shrink-0 text-emerald-400" />}
-            {toast.kind === 'error' && <TriangleAlert className="size-5 shrink-0 text-amber-400" />}
-            {toast.kind === 'info' && <Info className="size-5 shrink-0 text-sky-400" />}
-            <span className="flex-1">{toast.message}</span>
+            {toast.kind === 'success' && <CircleCheck className="size-5 shrink-0 text-green-700" />}
+            {toast.kind === 'error'   && <TriangleAlert className="size-5 shrink-0 text-red-700" />}
+            {toast.kind === 'info'    && <Info className="size-5 shrink-0 text-amber-700" />}
+            <span className="flex-1 font-medium">{toast.message}</span>
             {toast.action && (
               <button
                 type="button"
-                onClick={() => {
-                  toast.action?.onClick()
-                  dismiss(toast.id)
-                }}
-                className="rounded-lg px-2 py-1 font-semibold text-indigo-300 hover:bg-white/10"
+                onClick={() => { toast.action?.onClick(); dismiss(toast.id) }}
+                className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-50 transition-colors"
               >
                 {toast.action.label}
               </button>
@@ -67,5 +56,5 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components -- the hook belongs with its provider
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => useContext(ToastContext)

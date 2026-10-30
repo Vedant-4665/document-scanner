@@ -8,77 +8,50 @@ import { StepIndicator } from '../components/ui/StepIndicator'
 import { wholeImageCorners } from '../lib/corners'
 import type { PageDraft } from '../scanTypes'
 
-type AdjustCornersScreenProps = {
-  pageNumber: number
-  draft: PageDraft
-  onCornersChange: (corners: Corners) => void
-  onContinue: () => void
-  onCancel: () => void
+type Props = {
+  pageNumber: number; draft: PageDraft
+  onCornersChange: (c: Corners) => void; onContinue: () => void; onCancel: () => void
 }
 
-// Step 2 for a page: check the outline the computer found, and fix it by hand if needed.
-export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onContinue, onCancel }: AdjustCornersScreenProps) {
+export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onContinue, onCancel }: Props) {
   const { image, detection, detectionError, corners } = draft
-
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-5">
       <StepIndicator current={2} />
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-100">Adjust the corners</h2>
-          <p className="text-sm text-gray-400">Page {pageNumber} · drag the white circles onto the page's corners</p>
+          <h2 className="font-display text-xl text-[#1c1814]">Adjust the corners</h2>
+          <p className="text-sm text-[#555047]">Page {pageNumber} · drag the handles to the page corners</p>
         </div>
-        <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel this page">
-          <X className="size-4" /> Cancel
-        </button>
+        <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel"><X className="size-3.5" /> Cancel</button>
       </div>
 
-      {/* Be honest about what automatic detection did. */}
-      {detectionError ? (
-        <Alert kind="error">
-          Automatic edge detection failed: {detectionError} Drag the four corners onto the page by hand.
-        </Alert>
-      ) : detection.found ? (
-        <p className="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-400 ring-1 ring-emerald-500/30">
-          <CircleCheck className="size-4 text-emerald-400" /> Page edges detected. Check they look right.
-        </p>
-      ) : (
-        <Alert kind="warning">
-          We couldn't find the page edges automatically. Drag the four corners onto the corners of the page.
-        </Alert>
-      )}
+      {/* Detection status */}
+      {detectionError
+        ? <Alert kind="error">Detection failed: {detectionError} — drag the corners manually.</Alert>
+        : detection.found
+          ? (
+            <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-800">
+              <CircleCheck className="size-4 text-green-700 shrink-0" />
+              Page edges detected automatically — check they look right.
+            </div>
+          )
+          : <Alert kind="warning">Couldn't find edges automatically — drag the four corners onto the page.</Alert>
+      }
 
-      <CornerEditor
-        imageUrl={image.image_url}
-        imageWidth={image.width}
-        imageHeight={image.height}
-        corners={corners}
-        onChange={onCornersChange}
-      />
+      <CornerEditor imageUrl={image.image_url} imageWidth={image.width} imageHeight={image.height} corners={corners} onChange={onCornersChange} />
 
       <div className="flex flex-wrap justify-center gap-2">
         {detection.found && (
-          <button type="button" onClick={() => onCornersChange(detection.corners)} className={buttonClass('secondary', 'sm')}>
-            <Undo2 className="size-4" /> Reset to detected
-          </button>
+          <button type="button" onClick={() => onCornersChange(detection.corners)} className={buttonClass('secondary', 'sm')}><Undo2 className="size-3.5" /> Reset to detected</button>
         )}
-        <button
-          type="button"
-          onClick={() => onCornersChange(wholeImageCorners(image.width, image.height))}
-          className={buttonClass('secondary', 'sm')}
-        >
-          <Maximize2 className="size-4" /> Use whole image
-        </button>
+        <button type="button" onClick={() => onCornersChange(wholeImageCorners(image.width, image.height))} className={buttonClass('secondary', 'sm')}><Maximize2 className="size-3.5" /> Use whole image</button>
       </div>
 
       <ActionBar>
-        <button type="button" onClick={onCancel} className={buttonClass('secondary', 'lg')}>
-          Cancel
-        </button>
-        <button type="button" onClick={onContinue} className={buttonClass('primary', 'lg')}>
-          <Crop className="size-5" /> Crop page <ArrowRight className="size-5" />
-        </button>
+        <button type="button" onClick={onCancel} className={buttonClass('secondary', 'lg')}>Cancel</button>
+        <button type="button" onClick={onContinue} className={buttonClass('primary', 'lg')}><Crop className="size-4" /> Crop page <ArrowRight className="size-4" /></button>
       </ActionBar>
     </section>
   )
