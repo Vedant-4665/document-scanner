@@ -46,16 +46,17 @@ export async function getHealth(): Promise<HealthResponse> {
   return (await response.json()) as HealthResponse
 }
 
-export async function uploadImage(file: File): Promise<UploadedImage> {
+// `signal` lets the caller cancel the request (see isCancelled below).
+export async function uploadImage(file: File, signal?: AbortSignal): Promise<UploadedImage> {
   // FormData sends the file the same way a classic HTML <form> would.
   const form = new FormData()
   form.append('image', file)
-  const response = await send('/api/uploads', { method: 'POST', body: form })
+  const response = await send('/api/uploads', { method: 'POST', body: form, signal })
   return (await response.json()) as UploadedImage
 }
 
-export async function detectCorners(filename: string): Promise<DetectionResult> {
-  const response = await send('/api/process/detect', postJson({ filename }))
+export async function detectCorners(filename: string, signal?: AbortSignal): Promise<DetectionResult> {
+  const response = await send('/api/process/detect', { ...postJson({ filename }), signal })
   const body = (await response.json()) as { corners: [number, number][]; found: boolean }
   // The backend uses [x, y] pairs; the frontend uses {x, y} objects.
   const corners = body.corners.map(([x, y]) => ({ x, y })) as Corners
@@ -140,13 +141,20 @@ export function pdfDownloadUrl(scan: { pdf_url: string }): string {
   return `${scan.pdf_url}?download=1`
 }
 
+// True if an error is the result of the user cancelling a request on purpose
+// (not a failure to report).
+export function isCancelled(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError'
+}
+
 // Makes the request and turns every kind of failure into an Error whose
 // message can be shown to the user as-is.
 async function send(url: string, options?: RequestInit): Promise<Response> {
   let response: Response
   try {
     response = await fetch(url, options)
-  } catch {
+  } catch (error) {
+    if (isCancelled(error)) throw error // cancelled on purpose: let the caller handle it
     // fetch() itself only throws when the network request could not be made.
     throw new Error('Could not reach the server. Check your connection and that the dev server is running.')
   }

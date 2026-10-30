@@ -92,7 +92,7 @@ export function PageResultScreen({
           <p className="text-sm text-slate-500">Page {pageNumber} · pick a look and fix the rotation</p>
         </div>
         <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel this page">
-          <X className="size-4" /> <span className="hidden sm:inline">Cancel</span>
+          <X className="size-4" /> Cancel
         </button>
       </div>
 

@@ -21,3 +21,9 @@ export type PageDraft = {
 export type Page = PageDraft & {
   processed: ProcessedImage
 }
+
+// A photo that is being uploaded and checked for page edges right now.
+export type Analysis = {
+  previewUrl: string // a temporary browser-only URL, so the photo shows instantly
+  stage: 'uploading' | 'detecting'
+}

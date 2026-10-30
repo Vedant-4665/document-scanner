@@ -30,7 +30,7 @@ export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onCont
           <p className="text-sm text-slate-500">Page {pageNumber} · drag the white circles onto the page's corners</p>
         </div>
         <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel this page">
-          <X className="size-4" /> <span className="hidden sm:inline">Cancel</span>
+          <X className="size-4" /> Cancel
         </button>
       </div>
 
@@ -73,6 +73,9 @@ export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onCont
       </div>
 
       <ActionBar>
+        <button type="button" onClick={onCancel} className={buttonClass('secondary', 'lg')}>
+          Cancel
+        </button>
         <button type="button" onClick={onContinue} className={buttonClass('primary', 'lg')}>
           <Crop className="size-5" /> Crop page <ArrowRight className="size-5" />
         </button>

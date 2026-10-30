@@ -1,8 +1,12 @@
 import { History, ScanLine } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { detectCorners, isCancelled, uploadImage } from './api/client'
 import { ServerStatusBanner } from './components/ServerStatusBanner'
 import { useToast } from './components/ui/Toast'
-import type { Page, PageDraft } from './scanTypes'
+import { wholeImageCorners } from './lib/corners'
+import { useBackButton } from './lib/useBackButton'
+import { validateImageFile } from './lib/validateImageFile'
+import type { Analysis, Page, PageDraft } from './scanTypes'
 import { AdjustCornersScreen } from './screens/AdjustCornersScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { PageResultScreen } from './screens/PageResultScreen'
@@ -32,6 +36,11 @@ export default function App() {
   const [isReviewing, setIsReviewing] = useState(false)
   // True once the current pages have been saved as a PDF in history.
   const [isSaved, setIsSaved] = useState(false)
+  // A photo being uploaded and analysed right now, and the switch that cancels it.
+  const [analysis, setAnalysis] = useState<Analysis | null>(null)
+  const analysisAbort = useRef<AbortController | null>(null)
+  // Why the last chosen photo couldn't be added (wrong file type, upload failed…).
+  const [captureError, setCaptureError] = useState<string | null>(null)
 
   // Ask before closing or reloading the tab, which would lose the pages.
   const hasUnsavedWork = (pages.length > 0 && !isSaved) || editing !== null
@@ -42,8 +51,84 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', warn)
   }, [hasUnsavedWork])
 
+  // --- Adding a page: upload the photo, then look for the page edges ---
+
+  async function handleFileChosen(file: File) {
+    setCaptureError(null)
+    const problem = validateImageFile(file)
+    if (problem) {
+      setCaptureError(problem)
+      return
+    }
+
+    const controller = new AbortController()
+    analysisAbort.current = controller
+    const previewUrl = URL.createObjectURL(file) // shows the photo instantly
+    setAnalysis({ previewUrl, stage: 'uploading' })
+
+    try {
+      const image = await uploadImage(file, controller.signal)
+      setAnalysis({ previewUrl, stage: 'detecting' })
+
+      const base = { image, enhancement: 'original', rotation: 0 } as const
+      let draft: PageDraft
+      try {
+        const detection = await detectCorners(image.filename, controller.signal)
+        draft = { ...base, detection, detectionError: null, corners: detection.corners }
+      } catch (err) {
+        if (isCancelled(err)) throw err
+        // Detection failing is not the end: the user can still place corners by hand.
+        const corners = wholeImageCorners(image.width, image.height)
+        draft = {
+          ...base,
+          detection: { corners, found: false },
+          detectionError: err instanceof Error ? err.message : 'Unknown error',
+          corners,
+        }
+      }
+      if (controller.signal.aborted) return // cancelled just now
+      setEditing({ draft, index: null, step: 'corners' })
+    } catch (err) {
+      // Cancelling on purpose is not an error to show.
+      if (!isCancelled(err)) setCaptureError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      // Whether it worked, failed or was cancelled: close the analysis screen.
+      URL.revokeObjectURL(previewUrl)
+      if (analysisAbort.current === controller) analysisAbort.current = null
+      setAnalysis((current) => (current?.previewUrl === previewUrl ? null : current))
+    }
+  }
+
+  // The wrong photo was chosen: stop the upload and go back to the page list.
+  function cancelAnalysis() {
+    analysisAbort.current?.abort()
+    setAnalysis(null)
+  }
+
+  // --- Editing a page ---
+
   function updateDraft(changes: Partial<PageDraft>) {
     setEditing((current) => current && { ...current, draft: { ...current.draft, ...changes } })
+  }
+
+  // Leaving a page without saving it. An "Undo" button in the message brings it
+  // back, so cancelling by accident costs nothing.
+  function cancelEditing() {
+    const discarded = editing
+    setEditing(null)
+    if (!discarded) return
+    showToast(discarded.index === null ? 'Page discarded' : 'Changes discarded', {
+      kind: 'info',
+      action: { label: 'Undo', onClick: () => setEditing(discarded) },
+    })
+  }
+
+  function savePage(page: Page, index: number | null) {
+    setPages((current) =>
+      index === null ? [...current, page] : current.map((p, i) => (i === index ? page : p)),
+    )
+    setEditing(null)
+    showToast(index === null ? `Page ${pages.length + 1} added` : `Page ${index + 1} updated`)
   }
 
   function movePage(index: number, direction: -1 | 1) {
@@ -70,14 +155,6 @@ export default function App() {
     })
   }
 
-  function savePage(page: Page, index: number | null) {
-    setPages((current) =>
-      index === null ? [...current, page] : current.map((p, i) => (i === index ? page : p)),
-    )
-    setEditing(null)
-    showToast(index === null ? `Page ${pages.length + 1} added` : `Page ${index + 1} updated`)
-  }
-
   function startNewScan() {
     setPages([])
     setEditing(null)
@@ -85,11 +162,58 @@ export default function App() {
     setIsSaved(false)
   }
 
+  // --- Moving around ---
+
+  // The logo, and the Scan tab when you are already on it: back to the page
+  // list (or the start screen), from wherever you are. Pages already added
+  // are kept.
+  function goHome() {
+    window.scrollTo({ top: 0 })
+    setTab('scan')
+    if (analysis) cancelAnalysis()
+    if (editing) cancelEditing()
+    if (isSaved) startNewScan() // the document is already saved: start fresh
+    else setIsReviewing(false)
+  }
+
   function switchTab(next: Tab) {
+    if (next === 'scan' && tab === 'scan') {
+      goHome()
+      return
+    }
     setTab(next)
     if (next === 'history') setOpenScanId(null)
     window.scrollTo({ top: 0 })
   }
+
+  // How many steps deep the app is. The browser's Back button needs this
+  // (see useBackButton): 0 = a home screen, 1 = one step in, 2 = two steps in.
+  const depth =
+    tab === 'history'
+      ? openScanId
+        ? 1
+        : 0
+      : analysis
+        ? 1
+        : editing
+          ? editing.step === 'result'
+            ? 2
+            : 1
+          : isReviewing && pages.length > 0
+            ? 1
+            : 0
+
+  // The browser's (or phone's) Back button: go back exactly one step.
+  useBackButton(depth, () => {
+    if (tab === 'history') setOpenScanId(null)
+    else if (analysis) cancelAnalysis()
+    else if (editing?.step === 'result') setEditing({ ...editing, step: 'corners' })
+    else if (editing) cancelEditing()
+    else if (isReviewing) {
+      if (isSaved) startNewScan()
+      else setIsReviewing(false)
+    }
+  })
 
   const pageNumber = editing ? (editing.index ?? pages.length) + 1 : 0
 
@@ -123,11 +247,14 @@ export default function App() {
       />
     )
   } else if (!editing) {
-    screenKey = 'scan'
+    screenKey = analysis ? 'analysing' : 'scan'
     screen = (
       <ScanScreen
         pages={pages}
-        onPageStarted={(draft) => setEditing({ draft, index: null, step: 'corners' })}
+        analysis={analysis}
+        error={captureError}
+        onFileChosen={(file) => void handleFileChosen(file)}
+        onCancelAnalysis={cancelAnalysis}
         onMovePage={movePage}
         onEditPage={(index) => setEditing({ draft: pages[index], index, step: 'corners' })}
         onRemovePage={removePage}
@@ -142,7 +269,7 @@ export default function App() {
         draft={editing.draft}
         onCornersChange={(corners) => updateDraft({ corners })}
         onContinue={() => setEditing({ ...editing, step: 'result' })}
-        onCancel={() => setEditing(null)}
+        onCancel={cancelEditing}
       />
     )
   } else {
@@ -155,7 +282,7 @@ export default function App() {
         onRotationChange={(rotation) => updateDraft({ rotation })}
         onSave={(processed) => savePage({ ...editing.draft, processed }, editing.index)}
         onBack={() => setEditing({ ...editing, step: 'corners' })}
-        onCancel={() => setEditing(null)}
+        onCancel={cancelEditing}
       />
     )
   }
@@ -172,7 +299,8 @@ export default function App() {
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-3 px-4">
           <button
             type="button"
-            onClick={() => switchTab('scan')}
+            onClick={goHome}
+            aria-label="DocScan home"
             className="flex items-center gap-2.5 rounded-xl"
           >
             <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30">

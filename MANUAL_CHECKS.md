@@ -97,7 +97,17 @@ must be on the same Wi-Fi.
 - [ ] Press **Use whole image**. **Expected:** corners jump to the photo's corners.
 - [ ] **Desktop keyboard:** press Tab until a corner handle is outlined in yellow, use the arrow keys (Shift = bigger steps). **Expected:** the corner moves.
 - [ ] Drag corners into a dented (arrow-head) shape, press **Crop page**. **Expected:** a red message saying the corners don't make a usable page shape, with **Try again**; **← Corners** lets you fix it.
-- [ ] **✕ (Cancel)** at the top right. **Expected:** back to the page list; nothing added.
+- [ ] **Cancel** (top right, and next to **Crop page**). **Expected:** back to the start screen or page list with a "Page discarded · **Undo**" message. Press **Undo** quickly: the corner screen comes back.
+
+### Going back, from anywhere (you should never feel stuck)
+
+- [ ] Choose a photo, and **while "Analysing page 1…" is showing** press **Cancel** (top right, under the progress bar). **Expected:** straight back to the start screen, no error message, and the corner screen does *not* appear a few seconds later. (To see this clearly, use a large photo or a phone on slow Wi-Fi.)
+- [ ] Repeat, but this time tap the **DocScan logo** at the top left instead. **Expected:** the same.
+- [ ] Repeat, but this time press the browser's **Back** button (phone: the Back gesture or button). **Expected:** the same. The app is not left.
+- [ ] On the corner screen press **Back**. **Expected:** the page is discarded (with Undo). On the *result* screen, **Back** goes to the corner screen first, then to the start.
+- [ ] On the review screen press **Back**. **Expected:** the page list, with your pages still there. After a scan is *saved*, **Back** starts a fresh scan instead.
+- [ ] In History, open a scan and press **Back**. **Expected:** the list.
+- [ ] Tap the **Scan** tab while you are already on it, from the review screen. **Expected:** the page list.
 
 ## 4. Page result (look and rotation)
 

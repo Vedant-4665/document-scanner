@@ -1,19 +1,19 @@
-import { ArrowRight, Contrast, Crop, Lightbulb, ScanText, Sun } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
-import { detectCorners, uploadImage, type UploadedImage } from '../api/client'
+import { ArrowRight, Contrast, Crop, Lightbulb, ScanText, Sun, X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Alert } from '../components/Alert'
 import { CaptureOptions } from '../components/CaptureOptions'
 import { PageGrid } from '../components/PageGrid'
 import { ScanningPreview } from '../components/ScanningPreview'
 import { buttonClass } from '../components/ui/buttons'
 import { StepIndicator } from '../components/ui/StepIndicator'
-import { wholeImageCorners } from '../lib/corners'
-import { validateImageFile } from '../lib/validateImageFile'
-import type { Page, PageDraft } from '../scanTypes'
+import type { Analysis, Page } from '../scanTypes'
 
 type ScanScreenProps = {
   pages: Page[]
-  onPageStarted: (draft: PageDraft) => void // a new photo is uploaded and ready to adjust
+  analysis: Analysis | null // set while a chosen photo is being uploaded and analysed
+  error: string | null // why the last photo couldn't be added
+  onFileChosen: (file: File) => void
+  onCancelAnalysis: () => void
   onMovePage: (index: number, direction: -1 | 1) => void
   onEditPage: (index: number) => void
   onRemovePage: (index: number) => void
@@ -21,63 +21,31 @@ type ScanScreenProps = {
 }
 
 // The home screen: the document's pages so far, and ways to add another.
-export function ScanScreen({ pages, onPageStarted, onMovePage, onEditPage, onRemovePage, onReview }: ScanScreenProps) {
-  // A temporary browser-only URL for the chosen file, so the preview appears
-  // instantly, before the upload finishes.
-  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null)
-  const [stage, setStage] = useState<'uploading' | 'detecting'>('uploading')
-  const [error, setError] = useState<string | null>(null)
-
-  // Free the memory used by a temporary preview URL when it is replaced.
-  useEffect(() => {
-    return () => {
-      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl)
-    }
-  }, [localPreviewUrl])
-
-  async function handleFileChosen(file: File) {
-    setError(null)
-    const problem = validateImageFile(file)
-    if (problem) {
-      setError(problem)
-      return
-    }
-
-    setLocalPreviewUrl(URL.createObjectURL(file))
-    setStage('uploading')
-    let image: UploadedImage
-    try {
-      image = await uploadImage(file)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.')
-      setLocalPreviewUrl(null)
-      return
-    }
-
-    setStage('detecting')
-    const draft = { image, enhancement: 'original', rotation: 0 } as const
-    try {
-      const detection = await detectCorners(image.filename)
-      onPageStarted({ ...draft, detection, detectionError: null, corners: detection.corners })
-    } catch (err) {
-      // Detection failing is not the end: the user can still place corners by hand.
-      const corners = wholeImageCorners(image.width, image.height)
-      onPageStarted({
-        ...draft,
-        detection: { corners, found: false },
-        detectionError: err instanceof Error ? err.message : 'Unknown error',
-        corners,
-      })
-    }
-  }
-
-  // While uploading: the photo with the scanning animation.
-  if (localPreviewUrl) {
+export function ScanScreen({
+  pages,
+  analysis,
+  error,
+  onFileChosen,
+  onCancelAnalysis,
+  onMovePage,
+  onEditPage,
+  onRemovePage,
+  onReview,
+}: ScanScreenProps) {
+  // While a photo is being analysed: the photo with the scanning animation,
+  // and a Cancel button for when the wrong photo was chosen.
+  if (analysis) {
     return (
       <section className="flex flex-col gap-5">
         <StepIndicator current={1} />
-        <h2 className="text-center text-xl font-bold tracking-tight">Analysing page {pages.length + 1}…</h2>
-        <ScanningPreview src={localPreviewUrl} stage={stage} />
+        {/* Cancel sits next to the title, so it is visible without scrolling on a phone. */}
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold tracking-tight">Analysing page {pages.length + 1}…</h2>
+          <button type="button" onClick={onCancelAnalysis} className={buttonClass('secondary', 'sm')}>
+            <X className="size-4" /> Cancel
+          </button>
+        </div>
+        <ScanningPreview src={analysis.previewUrl} stage={analysis.stage} />
       </section>
     )
   }
@@ -99,7 +67,7 @@ export function ScanScreen({ pages, onPageStarted, onMovePage, onEditPage, onRem
 
         {error && <Alert kind="error">{error}</Alert>}
 
-        <CaptureOptions variant="hero" onFileChosen={(file) => void handleFileChosen(file)} />
+        <CaptureOptions variant="hero" onFileChosen={onFileChosen} />
 
         <div className="rounded-3xl border border-slate-200 bg-white/70 p-4 sm:p-5">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -137,7 +105,7 @@ export function ScanScreen({ pages, onPageStarted, onMovePage, onEditPage, onRem
       {error && <Alert kind="error">{error}</Alert>}
 
       <PageGrid pages={pages} onMove={onMovePage} onEdit={onEditPage} onRemove={onRemovePage}>
-        <CaptureOptions variant="tile" onFileChosen={(file) => void handleFileChosen(file)} />
+        <CaptureOptions variant="tile" onFileChosen={onFileChosen} />
       </PageGrid>
 
       {/* On phones, the main button sits just above the bottom tab bar. */}
