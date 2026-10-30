@@ -77,12 +77,12 @@ export function ScanDetailScreen({ scanId, onBack, onDeleted }: ScanDetailScreen
       {scan && (
         <>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight break-words">{scan.title}</h2>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200" title={formatDate(scan.created_at)}>
+            <h2 className="text-2xl font-bold tracking-tight text-gray-100 break-words">{scan.title}</h2>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-gray-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-800/60 px-3 py-1 ring-1 ring-gray-700/60" title={formatDate(scan.created_at)}>
                 <Calendar className="size-3.5" /> {formatRelative(scan.created_at)}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-800/60 px-3 py-1 ring-1 ring-gray-700/60">
                 <Files className="size-3.5" /> {scan.page_count} {scan.page_count === 1 ? 'page' : 'pages'}
               </span>
             </div>
@@ -91,18 +91,18 @@ export function ScanDetailScreen({ scanId, onBack, onDeleted }: ScanDetailScreen
           <ExportPanel scan={scan} />
 
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-slate-700">Pages · tap to enlarge</h3>
+            <h3 className="mb-2 text-sm font-semibold text-gray-300">Pages · tap to enlarge</h3>
             <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
               {scan.pages.map((page, index) => (
                 <button
                   key={page.number}
                   type="button"
                   onClick={() => setViewerIndex(index)}
-                  className="group relative shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-4 focus-visible:ring-indigo-200 focus-visible:outline-none"
+                  className="group relative shrink-0 overflow-hidden rounded-xl border border-gray-700/60 bg-gray-900/60 p-1 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/5 hover:border-teal-500/30 focus-visible:ring-4 focus-visible:ring-teal-500/30 focus-visible:outline-none"
                   aria-label={`View page ${page.number}`}
                 >
                   <img src={page.image_url} alt="" className="h-40 w-30 object-contain" />
-                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-slate-900/80 px-2 text-xs font-semibold text-white">
+                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-gray-950/80 px-2 text-xs font-semibold text-gray-300">
                     {page.number}
                   </span>
                 </button>
@@ -112,16 +112,16 @@ export function ScanDetailScreen({ scanId, onBack, onDeleted }: ScanDetailScreen
 
           <TextViewer pages={scan.pages} />
 
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50/50 p-4">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 backdrop-blur-sm">
             <div>
-              <p className="text-sm font-semibold text-slate-800">Delete this scan</p>
-              <p className="text-xs text-slate-500">Removes the PDF, page images and text.</p>
+              <p className="text-sm font-semibold text-gray-200">Delete this scan</p>
+              <p className="text-xs text-gray-500">Removes the PDF, page images and text.</p>
             </div>
             <button
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={isDeleting}
-              className={`${buttonClass('secondary', 'sm')} text-red-600`}
+              className={`${buttonClass('secondary', 'sm')} text-red-400 hover:text-red-300`}
             >
               <Trash2 className="size-4" /> {isDeleting ? 'Deleting…' : 'Delete'}
             </button>

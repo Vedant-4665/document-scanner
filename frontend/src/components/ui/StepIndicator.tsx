@@ -15,22 +15,22 @@ export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
             <span
               className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                 done
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-teal-500 text-gray-950'
                   : active
-                    ? 'bg-indigo-600 text-white ring-4 ring-indigo-100'
-                    : 'bg-slate-200 text-slate-500'
+                    ? 'bg-teal-500 text-gray-950 ring-4 ring-teal-500/20'
+                    : 'bg-gray-700/60 text-gray-500'
               }`}
               aria-current={active ? 'step' : undefined}
             >
               {done ? <Check className="size-3.5" strokeWidth={3} /> : number}
             </span>
             <span
-              className={`hidden text-xs font-medium sm:inline ${active ? 'text-slate-900' : 'text-slate-500'}`}
+              className={`hidden text-xs font-medium sm:inline ${active ? 'text-gray-200' : 'text-gray-500'}`}
             >
               {label}
             </span>
             {number < STEPS.length && (
-              <span className={`h-0.5 flex-1 rounded-full ${done ? 'bg-indigo-600' : 'bg-slate-200'}`} />
+              <span className={`h-0.5 flex-1 rounded-full ${done ? 'bg-teal-500' : 'bg-gray-700/60'}`} />
             )}
           </li>
         )

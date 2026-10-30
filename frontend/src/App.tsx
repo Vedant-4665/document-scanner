@@ -294,8 +294,8 @@ export default function App() {
   const unsavedCount = isSaved ? 0 : pages.length
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-indigo-50/60 via-slate-50 to-slate-50">
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
+    <div className="min-h-dvh bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
+      <header className="sticky top-0 z-30 border-b border-gray-800/80 bg-gray-950/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-3 px-4">
           <button
             type="button"
@@ -303,17 +303,17 @@ export default function App() {
             aria-label="DocScan home"
             className="flex items-center gap-2.5 rounded-xl"
           >
-            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 text-gray-950 shadow-lg shadow-teal-500/30">
               <ScanLine className="size-5" />
             </span>
             <span className="text-left leading-tight">
-              <span className="block font-bold tracking-tight">DocScan</span>
+              <span className="block font-bold tracking-tight text-gray-100">DocScan</span>
               
             </span>
           </button>
 
           {/* Desktop tabs. Phones use the bottom bar instead. */}
-          <nav className="hidden rounded-xl bg-slate-100 p-1 sm:flex" aria-label="Main">
+          <nav className="hidden rounded-xl bg-gray-800/60 p-1 backdrop-blur-sm sm:flex" aria-label="Main">
             <TabButton active={tab === 'scan'} onClick={() => switchTab('scan')} icon={<ScanLine className="size-4" />}>
               Scan
               {unsavedCount > 0 && <CountBadge count={unsavedCount} />}
@@ -335,7 +335,7 @@ export default function App() {
       {showBottomNav && (
         <nav
           aria-label="Main"
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-800/80 bg-gray-950/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden"
         >
           <div className="grid grid-cols-2">
             <BottomTab active={tab === 'scan'} onClick={() => switchTab('scan')} label="Scan" badge={unsavedCount}>
@@ -358,7 +358,7 @@ function TabButton(props: { active: boolean; onClick: () => void; icon: ReactNod
       onClick={props.onClick}
       aria-current={props.active ? 'page' : undefined}
       className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-        props.active ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+        props.active ? 'bg-gray-700/80 text-teal-400 shadow-sm shadow-teal-500/10' : 'text-gray-400 hover:text-gray-200'
       }`}
     >
       {props.icon}
@@ -374,7 +374,7 @@ function BottomTab(props: { active: boolean; onClick: () => void; label: string;
       onClick={props.onClick}
       aria-current={props.active ? 'page' : undefined}
       className={`relative flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold transition active:scale-95 ${
-        props.active ? 'text-indigo-600' : 'text-slate-500'
+        props.active ? 'text-teal-400' : 'text-gray-500'
       }`}
     >
       <span className="relative">
@@ -393,7 +393,7 @@ function BottomTab(props: { active: boolean; onClick: () => void; label: string;
 // Small round number, e.g. how many pages are waiting in the current scan.
 function CountBadge({ count }: { count: number }) {
   return (
-    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] leading-5 font-bold text-white">
+    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-teal-500 px-1.5 text-[11px] leading-5 font-bold text-gray-950">
       {count}
     </span>
   )

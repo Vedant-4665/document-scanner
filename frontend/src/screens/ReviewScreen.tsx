@@ -66,12 +66,12 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
   if (scan) {
     return (
       <section className="flex flex-col gap-5">
-        <div className="flex flex-col items-center gap-2 rounded-3xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-6 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-emerald-500/10 to-gray-900/50 p-6 text-center backdrop-blur-sm">
           <span className="flex size-14 animate-pop-in items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
             <CircleCheck className="size-8" />
           </span>
-          <h2 className="text-xl font-bold tracking-tight break-words">{scan.title}</h2>
-          <p className="text-sm text-slate-600">
+          <h2 className="text-xl font-bold tracking-tight text-gray-100 break-words">{scan.title}</h2>
+          <p className="text-sm text-gray-400">
             Saved to history · {scan.page_count} {scan.page_count === 1 ? 'page' : 'pages'} · searchable PDF
           </p>
         </div>
@@ -99,8 +99,8 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Review & save</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold tracking-tight text-gray-100">Review & save</h2>
+          <p className="text-sm text-gray-400">
             {pages.length} {pageWord} ready · the text will be read and saved with the PDF
           </p>
         </div>
@@ -115,9 +115,9 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
             <img
               src={page.processed.image_url}
               alt={`Page ${index + 1}`}
-              className="h-36 w-28 rounded-xl border border-slate-200 bg-white object-contain p-1 shadow-sm"
+              className="h-36 w-28 rounded-xl border border-gray-700/60 bg-gray-900/60 object-contain p-1 shadow-sm"
             />
-            <figcaption className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-slate-900/80 px-2 text-xs font-semibold text-white">
+            <figcaption className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-gray-950/80 px-2 text-xs font-semibold text-gray-300">
               {index + 1}
             </figcaption>
           </figure>
@@ -125,9 +125,9 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold text-slate-700">Title</span>
+        <span className="text-sm font-semibold text-gray-300">Title</span>
         <span className="relative">
-          <FileText className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-slate-400" />
+          <FileText className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={title}
@@ -135,7 +135,7 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
             maxLength={100}
             disabled={isCreating}
             placeholder="e.g. Electricity bill October"
-            className="h-12 w-full rounded-xl border border-slate-200 bg-white pr-3 pl-11 shadow-sm transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:outline-none disabled:bg-slate-50"
+            className="h-12 w-full rounded-xl border border-gray-700/80 bg-gray-800/60 pr-3 pl-11 text-gray-100 placeholder-gray-500 shadow-sm backdrop-blur-sm transition focus:border-teal-500/60 focus:ring-4 focus:ring-teal-500/20 focus:outline-none disabled:bg-gray-900/40 disabled:text-gray-500"
           />
         </span>
       </label>
@@ -143,18 +143,18 @@ export function ReviewScreen({ pages, onBack, onNewScan, onSaved, onViewHistory 
       {error && <Alert kind="error">{error}</Alert>}
 
       {isCreating ? (
-        <div className="flex flex-col items-center gap-3 rounded-3xl border border-indigo-100 bg-white p-6 text-center shadow-sm" role="status">
-          <span className="relative flex size-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <div className="flex flex-col items-center gap-3 rounded-3xl border border-teal-500/20 bg-gray-800/40 p-6 text-center shadow-sm backdrop-blur-sm" role="status">
+          <span className="relative flex size-14 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-400">
             <ScanText className="size-7" />
-            <span className="absolute inset-0 animate-ping rounded-2xl bg-indigo-200 opacity-40" />
+            <span className="absolute inset-0 animate-ping rounded-2xl bg-teal-500/20 opacity-40" />
           </span>
-          <p className="font-semibold">
+          <p className="font-semibold text-gray-200">
             Reading the text on {pages.length} {pageWord}…
           </p>
-          <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-indigo-100">
-            <div className="h-full w-2/5 animate-indeterminate rounded-full bg-indigo-600" />
+          <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-gray-700/60">
+            <div className="h-full w-2/5 animate-indeterminate rounded-full bg-gradient-to-r from-teal-500 to-cyan-400" />
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-gray-500">
             {elapsed}s · usually about {pages.length * SECONDS_PER_PAGE}–{pages.length * SECONDS_PER_PAGE * 3} seconds
           </p>
         </div>

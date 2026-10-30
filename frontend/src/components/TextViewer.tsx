@@ -44,34 +44,34 @@ export function TextViewer({ pages }: TextViewerProps) {
   const pageWord = tidyPages.length === 1 ? 'page' : 'pages'
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-gray-700/60 bg-gray-800/40 shadow-sm backdrop-blur-sm">
       {/* The always-visible row; tapping it opens or closes the text. */}
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
         aria-controls={panelId}
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-gray-700/30 focus-visible:bg-gray-700/30 focus-visible:outline-none"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400">
           <ScanText className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold text-slate-900">Recognised text</span>
-          <span className="block text-sm text-slate-500">
+          <span className="block font-semibold text-gray-200">Recognised text</span>
+          <span className="block text-sm text-gray-500">
             {totalWords > 0 ? `${totalWords} words on ${tidyPages.length} ${pageWord}` : 'No text was found'}
           </span>
         </span>
-        <span className="flex items-center gap-1 text-sm font-semibold text-indigo-600">
+        <span className="flex items-center gap-1 text-sm font-semibold text-teal-400">
           {isOpen ? 'Hide' : 'Show'}
           <ChevronDown className={`size-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </span>
       </button>
 
       {isOpen && (
-        <div id={panelId} className="animate-fade-in-up border-t border-slate-100">
+        <div id={panelId} className="animate-fade-in-up border-t border-gray-700/40">
           {tidyPages.length > 1 && (
-            <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2">
+            <div className="flex items-center justify-between gap-2 border-b border-gray-700/40 px-3 py-2">
               <div role="tablist" aria-label="Pages" className="flex gap-1.5 overflow-x-auto">
                 {tidyPages.map((p, index) => (
                   <button
@@ -81,7 +81,7 @@ export function TextViewer({ pages }: TextViewerProps) {
                     aria-selected={index === selected}
                     onClick={() => setSelected(index)}
                     className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                      index === selected ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                      index === selected ? 'bg-teal-500 text-gray-950' : 'text-gray-400 hover:bg-gray-700/60'
                     }`}
                   >
                     Page {p.number}
@@ -89,16 +89,16 @@ export function TextViewer({ pages }: TextViewerProps) {
                 ))}
               </div>
               <button type="button" onClick={() => void handleCopy('all')} className={`${buttonClass('ghost', 'sm')} shrink-0`}>
-                {justCopied === 'all' ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+                {justCopied === 'all' ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
                 {justCopied === 'all' ? 'Copied' : 'Copy all'}
               </button>
             </div>
           )}
 
           {/* The text, laid out like a document: paragraphs with normal spacing. */}
-          <div className="bg-slate-50/70 p-3 sm:p-4">
+          <div className="bg-gray-900/40 p-3 sm:p-4">
             {page.paragraphs.length > 0 ? (
-              <article className="flex max-h-96 flex-col gap-3 overflow-auto rounded-2xl bg-white px-4 py-4 text-[15px] leading-6 text-slate-800 shadow-sm ring-1 ring-slate-200 sm:px-6 sm:py-5">
+              <article className="flex max-h-96 flex-col gap-3 overflow-auto rounded-2xl bg-gray-800/60 px-4 py-4 text-[15px] leading-6 text-gray-300 shadow-sm ring-1 ring-gray-700/50 sm:px-6 sm:py-5">
                 {page.paragraphs.map((paragraph, index) => (
                   <p key={index}>
                     {paragraph.map((line, lineIndex) => (
@@ -110,20 +110,20 @@ export function TextViewer({ pages }: TextViewerProps) {
                 ))}
               </article>
             ) : (
-              <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-slate-500 ring-1 ring-slate-200">
+              <p className="rounded-2xl bg-gray-800/60 px-4 py-8 text-center text-sm text-gray-500 ring-1 ring-gray-700/50">
                 No text was found on this page. If it does contain text, try a sharper photo or the Black & white look.
               </p>
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5">
-            <p className="flex items-center gap-1.5 text-xs text-slate-500">
+          <div className="flex items-center justify-between gap-2 border-t border-gray-700/40 px-4 py-2.5">
+            <p className="flex items-center gap-1.5 text-xs text-gray-500">
               <Info className="size-3.5 shrink-0" />
               OCR can make mistakes. Check names, numbers and dates.
             </p>
             {page.paragraphs.length > 0 && (
               <button type="button" onClick={() => void handleCopy('page')} className={`${buttonClass('secondary', 'sm')} shrink-0`}>
-                {justCopied === 'page' ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+                {justCopied === 'page' ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
                 {justCopied === 'page' ? 'Copied' : 'Copy'}
               </button>
             )}

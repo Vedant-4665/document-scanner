@@ -26,8 +26,8 @@ export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onCont
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Adjust the corners</h2>
-          <p className="text-sm text-slate-500">Page {pageNumber} · drag the white circles onto the page's corners</p>
+          <h2 className="text-xl font-bold tracking-tight text-gray-100">Adjust the corners</h2>
+          <p className="text-sm text-gray-400">Page {pageNumber} · drag the white circles onto the page's corners</p>
         </div>
         <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel this page">
           <X className="size-4" /> Cancel
@@ -40,8 +40,8 @@ export function AdjustCornersScreen({ pageNumber, draft, onCornersChange, onCont
           Automatic edge detection failed: {detectionError} Drag the four corners onto the page by hand.
         </Alert>
       ) : detection.found ? (
-        <p className="inline-flex items-center gap-2 self-start rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800 ring-1 ring-emerald-200">
-          <CircleCheck className="size-4 text-emerald-600" /> Page edges detected. Check they look right.
+        <p className="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-400 ring-1 ring-emerald-500/30">
+          <CircleCheck className="size-4 text-emerald-400" /> Page edges detected. Check they look right.
         </p>
       ) : (
         <Alert kind="warning">

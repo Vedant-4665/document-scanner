@@ -88,8 +88,8 @@ export function PageResultScreen({
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Enhance the page</h2>
-          <p className="text-sm text-slate-500">Page {pageNumber} · pick a look and fix the rotation</p>
+          <h2 className="text-xl font-bold tracking-tight text-gray-100">Enhance the page</h2>
+          <p className="text-sm text-gray-400">Page {pageNumber} · pick a look and fix the rotation</p>
         </div>
         <button type="button" onClick={onCancel} className={buttonClass('ghost', 'sm')} aria-label="Cancel this page">
           <X className="size-4" /> Cancel
@@ -113,24 +113,24 @@ export function PageResultScreen({
       )}
 
       {/* The page preview, with rotate buttons floating on top. */}
-      <div className="relative flex min-h-72 items-center justify-center overflow-hidden rounded-3xl bg-slate-200/70 px-3 pt-3 pb-16 shadow-inner sm:px-5 sm:pt-5">
+      <div className="relative flex min-h-72 items-center justify-center overflow-hidden rounded-3xl bg-gray-800/50 px-3 pt-3 pb-16 shadow-inner ring-1 ring-gray-700/50 sm:px-5 sm:pt-5">
         {result ? (
           <img
             src={showOriginal ? image.image_url : result.image_url}
             alt={showOriginal ? 'Original photo' : `Processed page ${pageNumber}`}
-            className={`max-h-[44dvh] w-auto rounded-lg bg-white shadow-xl transition sm:max-h-[55dvh] ${isProcessing ? 'opacity-50 blur-[1px]' : ''}`}
+            className={`max-h-[44dvh] w-auto rounded-lg bg-gray-900 shadow-xl transition sm:max-h-[55dvh] ${isProcessing ? 'opacity-50 blur-[1px]' : ''}`}
           />
         ) : (
           isProcessing && <div className="skeleton aspect-[3/4] h-[44dvh] max-w-full rounded-lg sm:h-[55dvh]" />
         )}
 
         {isProcessing && (
-          <span className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold shadow-lg" role="status">
-            <Loader2 className="size-4 animate-spin text-indigo-600" /> Processing…
+          <span className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-semibold text-gray-200 shadow-lg ring-1 ring-gray-700/60 backdrop-blur-sm" role="status">
+            <Loader2 className="size-4 animate-spin text-teal-400" /> Processing…
           </span>
         )}
         {showOriginal && (
-          <span className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-900/80 px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-gray-950/80 px-3 py-1 text-xs font-semibold text-gray-300 ring-1 ring-gray-700/60">
             Original photo
           </span>
         )}
@@ -156,15 +156,15 @@ export function PageResultScreen({
 
       {/* Look choice: two big radio cards. */}
       <fieldset>
-        <legend className="mb-2 text-sm font-semibold text-slate-700">Look</legend>
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5">
+        <legend className="mb-2 text-sm font-semibold text-gray-300">Look</legend>
+        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-gray-800/40 p-1.5 ring-1 ring-gray-700/50">
           {LOOK_OPTIONS.map((option) => {
             const selected = enhancement === option.value
             return (
               <label
                 key={option.value}
-                className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-xl p-3 text-center transition has-focus-visible:ring-4 has-focus-visible:ring-indigo-200 sm:flex-row sm:gap-3 sm:text-left ${
-                  selected ? 'bg-white shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:bg-white/60'
+                className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-xl p-3 text-center transition has-focus-visible:ring-4 has-focus-visible:ring-teal-500/30 sm:flex-row sm:gap-3 sm:text-left ${
+                  selected ? 'bg-gray-700/80 shadow-sm ring-1 ring-gray-600/80' : 'text-gray-400 hover:bg-gray-700/40'
                 }`}
               >
                 <input
@@ -175,12 +175,12 @@ export function PageResultScreen({
                   onChange={() => changeLook(option.value)}
                   className="sr-only"
                 />
-                <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${selected ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500'}`}>
+                <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${selected ? 'bg-teal-500 text-gray-950' : 'bg-gray-800/80 text-gray-400'}`}>
                   {option.icon}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-slate-900">{option.label}</span>
-                  <span className="block text-xs text-slate-500">{option.hint}</span>
+                  <span className="block text-sm font-semibold text-gray-200">{option.label}</span>
+                  <span className="block text-xs text-gray-500">{option.hint}</span>
                 </span>
               </label>
             )

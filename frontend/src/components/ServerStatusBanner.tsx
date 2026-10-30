@@ -29,14 +29,14 @@ export function ServerStatusBanner() {
   return (
     <div
       role="alert"
-      className="flex animate-fade-in-up items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900"
+      className="flex animate-fade-in-up items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-sm text-amber-300 backdrop-blur-sm"
     >
-      <WifiOff className="size-5 shrink-0 text-amber-500" />
+      <WifiOff className="size-5 shrink-0 text-amber-400" />
       <p className="flex-1">{error}</p>
       <button
         type="button"
         onClick={() => setCheckCount((count) => count + 1)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold hover:bg-amber-100"
+        className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold hover:bg-amber-500/10"
       >
         <RotateCw className="size-4" /> Retry
       </button>

@@ -39,7 +39,7 @@ export function ScanScreen({
         <StepIndicator current={1} />
         {/* Cancel sits next to the title, so it is visible without scrolling on a phone. */}
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight">Analysing page {pages.length + 1}…</h2>
+          <h2 className="text-xl font-bold tracking-tight text-gray-100">Analysing page {pages.length + 1}…</h2>
           <button type="button" onClick={onCancelAnalysis} className={buttonClass('secondary', 'sm')}>
             <X className="size-4" /> Cancel
           </button>
@@ -54,11 +54,11 @@ export function ScanScreen({
     return (
       <section className="flex flex-col gap-6">
         <div className="pt-2 text-center">
-          <span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-3xl bg-white text-indigo-600 shadow-lg shadow-indigo-500/10 ring-1 ring-slate-200">
+          <span className="mx-auto mb-4 flex size-16 items-center justify-center rounded-3xl bg-gray-800/80 text-teal-400 shadow-lg shadow-teal-500/10 ring-1 ring-gray-700/80">
             <ScanText className="size-8" />
           </span>
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Scan a document</h2>
-          <p className="mx-auto mt-2 max-w-md text-slate-600">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-100 sm:text-3xl">Scan a document</h2>
+          <p className="mx-auto mt-2 max-w-md text-gray-400">
             Snap a photo of each page. We'll straighten it, clean it up, read the text and turn it
             into a searchable PDF.
           </p>
@@ -79,8 +79,8 @@ export function ScanScreen({
     <section className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Your document</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold tracking-tight text-gray-100">Your document</h2>
+          <p className="text-sm text-gray-400">
             {pages.length} {pageWord} · tap a page to edit it
           </p>
         </div>
@@ -100,7 +100,7 @@ export function ScanScreen({
 
       {/* On phones, the main button sits just above the bottom tab bar. */}
       <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-20 sm:hidden">
-        <button type="button" onClick={onReview} className={`${buttonClass('primary', 'lg')} w-full shadow-lg`}>
+        <button type="button" onClick={onReview} className={`${buttonClass('primary', 'lg')} w-full shadow-lg shadow-teal-500/20`}>
           Review & save {pages.length} {pageWord} <ArrowRight className="size-5" />
         </button>
       </div>

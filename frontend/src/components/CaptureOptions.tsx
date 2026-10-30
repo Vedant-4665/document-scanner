@@ -70,11 +70,11 @@ export function CaptureOptions({ onFileChosen, variant }: CaptureOptionsProps) {
       <div
         {...dropHandlers}
         className={`flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-3 transition ${
-          isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 bg-white/60'
+          isDragging ? 'border-teal-500 bg-teal-500/10' : 'border-gray-700/60 bg-gray-800/30'
         }`}
       >
-        <Plus className="size-6 text-slate-400" />
-        <span className="text-sm font-semibold text-slate-700">Add page</span>
+        <Plus className="size-6 text-gray-500" />
+        <span className="text-sm font-semibold text-gray-300">Add page</span>
         <div className="flex gap-2">
           {isTouchDevice && (
             <TileButton label="Take photo" onClick={() => cameraInputRef.current?.click()}>
@@ -114,7 +114,7 @@ export function CaptureOptions({ onFileChosen, variant }: CaptureOptionsProps) {
 
       {/* Shown over the cards while a file is dragged over them. */}
       {isDragging && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-3xl border-2 border-dashed border-indigo-500 bg-indigo-50/90 text-lg font-semibold text-indigo-700">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-3xl border-2 border-dashed border-teal-500 bg-teal-500/10 text-lg font-semibold text-teal-300 backdrop-blur-sm">
           Drop the image here
         </div>
       )}
@@ -135,26 +135,26 @@ function BigOption(props: {
     <button
       type="button"
       onClick={props.onClick}
-      className={`group flex flex-col items-center justify-center gap-3 rounded-3xl p-5 text-center transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 ${
-        props.tall ? 'min-h-56 border-2 border-dashed border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50/40' : 'min-h-40'
+      className={`group flex flex-col items-center justify-center gap-3 rounded-3xl p-5 text-center transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-500/30 ${
+        props.tall ? 'min-h-56 border-2 border-dashed border-gray-700/60 bg-gray-800/30 hover:border-teal-500/40 hover:bg-teal-500/5' : 'min-h-40'
       } ${
         props.primary && !props.tall
-          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
+          ? 'bg-gradient-to-br from-teal-500 to-cyan-500 text-gray-950 shadow-lg shadow-teal-500/25'
           : !props.tall
-            ? 'border border-slate-200 bg-white text-slate-800 shadow-sm'
+            ? 'border border-gray-700/80 bg-gray-800/40 text-gray-200 shadow-sm backdrop-blur-sm'
             : ''
       }`}
     >
       <span
         className={`flex size-14 items-center justify-center rounded-2xl transition group-hover:scale-105 ${
-          props.primary && !props.tall ? 'bg-white/20' : 'bg-indigo-50 text-indigo-600'
+          props.primary && !props.tall ? 'bg-white/20' : 'bg-teal-500/10 text-teal-400'
         }`}
       >
         {props.icon}
       </span>
       <span>
         <span className="block text-base font-semibold">{props.title}</span>
-        <span className={`block text-xs ${props.primary && !props.tall ? 'text-indigo-100' : 'text-slate-500'}`}>
+        <span className={`block text-xs ${props.primary && !props.tall ? 'text-teal-100' : 'text-gray-500'}`}>
           {props.subtitle}
         </span>
       </span>
@@ -169,7 +169,7 @@ function TileButton(props: { label: string; onClick: () => void; children: React
       onClick={props.onClick}
       aria-label={props.label}
       title={props.label}
-      className="flex size-11 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-700 active:scale-90"
+      className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-gray-950 shadow-sm transition hover:from-teal-400 hover:to-cyan-400 active:scale-90"
     >
       {props.children}
     </button>
