@@ -308,7 +308,7 @@ export default function App() {
             </span>
             <span className="text-left leading-tight">
               <span className="block font-bold tracking-tight">DocScan</span>
-              <span className="block text-xs text-slate-500">Computer vision scanner</span>
+              
             </span>
           </button>
 

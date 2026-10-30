@@ -1,5 +1,4 @@
-import { ArrowRight, Contrast, Crop, Lightbulb, ScanText, Sun, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ArrowRight, ScanText, X } from 'lucide-react'
 import { Alert } from '../components/Alert'
 import { CaptureOptions } from '../components/CaptureOptions'
 import { PageGrid } from '../components/PageGrid'
@@ -69,16 +68,7 @@ export function ScanScreen({
 
         <CaptureOptions variant="hero" onFileChosen={onFileChosen} />
 
-        <div className="rounded-3xl border border-slate-200 bg-white/70 p-4 sm:p-5">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Lightbulb className="size-4 text-amber-500" /> Tips for a great scan
-          </h3>
-          <ul className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
-            <Tip icon={<Contrast className="size-4" />}>Put the page on a darker surface</Tip>
-            <Tip icon={<Sun className="size-4" />}>Use even light, avoid hard shadows</Tip>
-            <Tip icon={<Crop className="size-4" />}>Keep all four corners in the photo</Tip>
-          </ul>
-        </div>
+       
       </section>
     )
   }
@@ -118,13 +108,4 @@ export function ScanScreen({
   )
 }
 
-function Tip({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <li className="flex items-center gap-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-        {icon}
-      </span>
-      {children}
-    </li>
-  )
-}
+
